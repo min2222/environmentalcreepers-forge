@@ -26,7 +26,7 @@ public class CommandReloadConfig
      {
          if (Configs.reloadConfig())
          {
-             source.sendSuccess(Component.literal("Environmental Creepers config reloaded"), true);
+             source.sendSuccess(() -> Component.literal("Environmental Creepers config reloaded"), true);
              return 0;
          }
 
