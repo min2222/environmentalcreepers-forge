@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -75,7 +75,7 @@ public class ExplosionEventHandler
             EnvironmentalCreepers.logInfo("Explosion: class: {}, position: {}", explosion.getClass().getName(), explosion.getPosition());
         }
 
-        if (explosion.getSourceMob() instanceof Creeper)
+        if (explosion.getIndirectSourceEntity() instanceof Creeper)
         {
             if (Configs.Toggles.modifyCreeperExplosionDropChance && Configs.Toggles.disableCreeperExplosionBlockDamage == false)
             {
@@ -102,7 +102,7 @@ public class ExplosionEventHandler
             return;
         }
 
-        if (explosion.getSourceMob() instanceof Creeper)
+        if (explosion.getIndirectSourceEntity() instanceof Creeper)
         {
             if (Configs.Toggles.disableCreeperExplosionItemDamage)
             {
@@ -179,7 +179,7 @@ public class ExplosionEventHandler
 
             if (isCreeper && Configs.Toggles.modifyCreeperExplosionStrength)
             {
-                if (((Creeper) explosion.getSourceMob()).isPowered())
+                if (((Creeper) explosion.getIndirectSourceEntity()).isPowered())
                 {
                     explosionSize = (float) Configs.Generic.creeperExplosionStrengthCharged;
                 }
@@ -205,10 +205,10 @@ public class ExplosionEventHandler
                     (pos.y < Configs.Generic.creeperAltitudeDamageMinY ||
                      pos.y > Configs.Generic.creeperAltitudeDamageMaxY))
                 {
-                    mode = Explosion.BlockInteraction.NONE;
+                    mode = Explosion.BlockInteraction.KEEP;
                 }
 
-                if (mode == Explosion.BlockInteraction.NONE)
+                if (mode == Explosion.BlockInteraction.KEEP)
                 {
                     explosion.clearToBlow();
                 }
@@ -245,7 +245,7 @@ public class ExplosionEventHandler
     {
         Vec3 posVec = explosion.getPosition();
         RandomSource rand = world.random;
-        boolean breaksBlock = mode != Explosion.BlockInteraction.NONE &&
+        boolean breaksBlock = mode != Explosion.BlockInteraction.KEEP &&
                 (isCreeper ? Configs.Toggles.disableCreeperExplosionBlockDamage == false :
                              Configs.Toggles.disableOtherExplosionBlockDamage == false);
 
@@ -289,8 +289,7 @@ public class ExplosionEventHandler
                             BlockEntity te = state.hasBlockEntity() ? world.getBlockEntity(pos) : null;
                             Entity exploder = this.getExploder(explosion);
 
-                            LootContext.Builder builder = (new LootContext.Builder(serverWorld))
-                                    .withRandom(rand)
+                            LootParams.Builder builder = (new LootParams.Builder(serverWorld))
                                     .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos))
                                     .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
                                     .withOptionalParameter(LootContextParams.BLOCK_ENTITY, te)
